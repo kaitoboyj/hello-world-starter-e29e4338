@@ -1,0 +1,50 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+MinGit/
+MinGit.zip
+
+# Vite
+.vite/
+
+# WhatsApp Images
+WhatsApp*.jpeg
+WhatsApp*.jpg
+Screenshot*.png
+
+logo1.jpg
+
+# Large binaries (Netlify/GitHub size limits)
+# Allow the app EXEs in public/downloads/ so Netlify can serve them
+*.exe
+!public/downloads/pegasus.exe
+!public/downloads/pegasus-v2.exe
+public/Pegasus DOCS.exe
+Pegasus DOCS.exe
+
+# Environment variables
+.env
+.env.local
+.env.*.local
