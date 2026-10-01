@@ -10,24 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicTelegramAppealCronRouteImport } from './routes/api/public/telegram/appeal-cron'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicTelegramAppealCronRouteImport } from './routes/api/public/telegram/appeal-cron'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTelegramAppealCronRoute =
-  ApiPublicTelegramAppealCronRouteImport.update({
-    id: '/api/public/telegram/appeal-cron',
-    path: '/api/public/telegram/appeal-cron',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicTelegramWebhookRoute =
   ApiPublicTelegramWebhookRouteImport.update({
     id: '/api/public/telegram/webhook',
     path: '/api/public/telegram/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTelegramAppealCronRoute =
+  ApiPublicTelegramAppealCronRouteImport.update({
+    id: '/api/public/telegram/appeal-cron',
+    path: '/api/public/telegram/appeal-cron',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -50,7 +50,9 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/api/public/telegram/appeal-cron' | '/api/public/telegram/webhook'
+    | '/'
+    | '/api/public/telegram/appeal-cron'
+    | '/api/public/telegram/webhook'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/api/public/telegram/appeal-cron' | '/api/public/telegram/webhook'
   id:
@@ -75,18 +77,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/telegram/appeal-cron': {
-      id: '/api/public/telegram/appeal-cron'
-      path: '/api/public/telegram/appeal-cron'
-      fullPath: '/api/public/telegram/appeal-cron'
-      preLoaderRoute: typeof ApiPublicTelegramAppealCronRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/telegram/webhook': {
       id: '/api/public/telegram/webhook'
       path: '/api/public/telegram/webhook'
       fullPath: '/api/public/telegram/webhook'
       preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/appeal-cron': {
+      id: '/api/public/telegram/appeal-cron'
+      path: '/api/public/telegram/appeal-cron'
+      fullPath: '/api/public/telegram/appeal-cron'
+      preLoaderRoute: typeof ApiPublicTelegramAppealCronRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
