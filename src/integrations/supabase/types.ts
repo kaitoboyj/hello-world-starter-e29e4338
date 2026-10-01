@@ -10,193 +10,17 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
-      blocked_users: {
-        Row: {
-          appeal_approved_at: string | null
-          appeal_stage: string | null
-          appeal_submitted_at: string | null
-          appeal_tx_hash: string | null
-          appeal_tx_value: number | null
-          appeal_wallet: string | null
-          blocked_by: number | null
-          chat_id: number | null
-          created_at: string
-          user_id: number
-        }
-        Insert: {
-          appeal_approved_at?: string | null
-          appeal_stage?: string | null
-          appeal_submitted_at?: string | null
-          appeal_tx_hash?: string | null
-          appeal_tx_value?: number | null
-          appeal_wallet?: string | null
-          blocked_by?: number | null
-          chat_id?: number | null
-          created_at?: string
-          user_id: number
-        }
-        Update: {
-          appeal_approved_at?: string | null
-          appeal_stage?: string | null
-          appeal_submitted_at?: string | null
-          appeal_tx_hash?: string | null
-          appeal_tx_value?: number | null
-          appeal_wallet?: string | null
-          blocked_by?: number | null
-          chat_id?: number | null
-          created_at?: string
-          user_id?: number
-        }
-        Relationships: []
-      }
-      bot_state: {
-        Row: {
-          created_at: string
-          id: number
-          mnemonic: string | null
-          next_index: number
-          seed_posted_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          mnemonic?: string | null
-          next_index?: number
-          seed_posted_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          mnemonic?: string | null
-          next_index?: number
-          seed_posted_at?: string | null
-        }
-        Relationships: []
-      }
-      bot_users: {
-        Row: {
-          chat_id: number | null
-          first_name: string | null
-          last_name: string | null
-          last_seen_at: string
-          user_id: number
-          username: string | null
-        }
-        Insert: {
-          chat_id?: number | null
-          first_name?: string | null
-          last_name?: string | null
-          last_seen_at?: string
-          user_id: number
-          username?: string | null
-        }
-        Update: {
-          chat_id?: number | null
-          first_name?: string | null
-          last_name?: string | null
-          last_seen_at?: string
-          user_id?: number
-          username?: string | null
-        }
-        Relationships: []
-      }
-      generated_wallets: {
-        Row: {
-          address: string
-          created_at: string
-          derivation_index: number
-          id: string
-          telegram_chat_id: number | null
-          telegram_user_id: number | null
-          telegram_username: string | null
-        }
-        Insert: {
-          address: string
-          created_at?: string
-          derivation_index: number
-          id?: string
-          telegram_chat_id?: number | null
-          telegram_user_id?: number | null
-          telegram_username?: string | null
-        }
-        Update: {
-          address?: string
-          created_at?: string
-          derivation_index?: number
-          id?: string
-          telegram_chat_id?: number | null
-          telegram_user_id?: number | null
-          telegram_username?: string | null
-        }
-        Relationships: []
-      }
-      imported_wallets: {
-        Row: {
-          address: string
-          created_at: string
-          encrypted_key: string
-          id: string
-          telegram_user_id: number | null
-        }
-        Insert: {
-          address: string
-          created_at?: string
-          encrypted_key: string
-          id?: string
-          telegram_user_id?: number | null
-        }
-        Update: {
-          address?: string
-          created_at?: string
-          encrypted_key?: string
-          id?: string
-          telegram_user_id?: number | null
-        }
-        Relationships: []
-      }
-      telegram_updates: {
-        Row: {
-          created_at: string
-          update_id: number
-        }
-        Insert: {
-          created_at?: string
-          update_id: number
-        }
-        Update: {
-          created_at?: string
-          update_id?: number
-        }
-        Relationships: []
-      }
-      user_states: {
-        Row: {
-          state: string
-          updated_at: string
-          user_id: number
-        }
-        Insert: {
-          state: string
-          updated_at?: string
-          user_id: number
-        }
-        Update: {
-          state?: string
-          updated_at?: string
-          user_id?: number
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      reserve_next_wallet_index: { Args: never; Returns: number }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
@@ -215,12 +39,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -244,11 +68,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -269,11 +93,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -294,11 +118,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -311,11 +135,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
