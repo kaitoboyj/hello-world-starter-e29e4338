@@ -12,4 +12,13 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    resolve: {
+      alias: {
+        // rpc-websockets only exports "browser"/"node" conditions; the hosting runtime
+        // matches neither, so point it at the browser build (uses native WebSocket).
+        "rpc-websockets": "rpc-websockets/dist/index.browser.mjs",
+      },
+    },
+  },
 });
