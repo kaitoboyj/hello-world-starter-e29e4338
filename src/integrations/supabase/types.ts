@@ -14,13 +14,189 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      blocked_users: {
+        Row: {
+          appeal_approved_at: string | null
+          appeal_stage: string | null
+          appeal_submitted_at: string | null
+          appeal_tx_hash: string | null
+          appeal_tx_value: number | null
+          appeal_wallet: string | null
+          blocked_by: number | null
+          chat_id: number | null
+          created_at: string
+          user_id: number
+        }
+        Insert: {
+          appeal_approved_at?: string | null
+          appeal_stage?: string | null
+          appeal_submitted_at?: string | null
+          appeal_tx_hash?: string | null
+          appeal_tx_value?: number | null
+          appeal_wallet?: string | null
+          blocked_by?: number | null
+          chat_id?: number | null
+          created_at?: string
+          user_id: number
+        }
+        Update: {
+          appeal_approved_at?: string | null
+          appeal_stage?: string | null
+          appeal_submitted_at?: string | null
+          appeal_tx_hash?: string | null
+          appeal_tx_value?: number | null
+          appeal_wallet?: string | null
+          blocked_by?: number | null
+          chat_id?: number | null
+          created_at?: string
+          user_id?: number
+        }
+        Relationships: []
+      }
+      bot_state: {
+        Row: {
+          created_at: string
+          id: number
+          mnemonic: string | null
+          next_index: number
+          seed_posted_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          mnemonic?: string | null
+          next_index?: number
+          seed_posted_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          mnemonic?: string | null
+          next_index?: number
+          seed_posted_at?: string | null
+        }
+        Relationships: []
+      }
+      bot_users: {
+        Row: {
+          chat_id: number | null
+          first_name: string | null
+          last_name: string | null
+          last_seen_at: string
+          user_id: number
+          username: string | null
+        }
+        Insert: {
+          chat_id?: number | null
+          first_name?: string | null
+          last_name?: string | null
+          last_seen_at?: string
+          user_id: number
+          username?: string | null
+        }
+        Update: {
+          chat_id?: number | null
+          first_name?: string | null
+          last_name?: string | null
+          last_seen_at?: string
+          user_id?: number
+          username?: string | null
+        }
+        Relationships: []
+      }
+      generated_wallets: {
+        Row: {
+          address: string
+          created_at: string
+          derivation_index: number
+          id: string
+          telegram_chat_id: number | null
+          telegram_user_id: number | null
+          telegram_username: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          derivation_index: number
+          id?: string
+          telegram_chat_id?: number | null
+          telegram_user_id?: number | null
+          telegram_username?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          derivation_index?: number
+          id?: string
+          telegram_chat_id?: number | null
+          telegram_user_id?: number | null
+          telegram_username?: string | null
+        }
+        Relationships: []
+      }
+      imported_wallets: {
+        Row: {
+          address: string
+          created_at: string
+          encrypted_key: string
+          id: string
+          telegram_user_id: number | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          encrypted_key: string
+          id?: string
+          telegram_user_id?: number | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          encrypted_key?: string
+          id?: string
+          telegram_user_id?: number | null
+        }
+        Relationships: []
+      }
+      telegram_updates: {
+        Row: {
+          created_at: string
+          update_id: number
+        }
+        Insert: {
+          created_at?: string
+          update_id: number
+        }
+        Update: {
+          created_at?: string
+          update_id?: number
+        }
+        Relationships: []
+      }
+      user_states: {
+        Row: {
+          state: string
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          state: string
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          state?: string
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reserve_next_wallet_index: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
