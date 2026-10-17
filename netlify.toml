@@ -1,11 +1,11 @@
 [build]
   command = "npm run build"
-  # Nitro's "netlify" preset emits static assets to .output/public and the SSR
-  # handler to .netlify/functions-internal/ (auto-detected by Netlify). Nitro
-  # writes its own _headers / _redirects, so no manual SPA fallback is needed.
-  publish = ".output/public"
+  # Nitro's "netlify" preset emits static assets to dist/ and the SSR handler to
+  # .netlify/functions-internal/ (auto-detected by Netlify). Nitro also writes its
+  # own _headers / _redirects into dist/, so no manual SPA fallback is needed here.
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "22.12.0"
-  # Force the Netlify output format even if another preset is configured.
+  # Force the Netlify output format regardless of local environment.
   NITRO_PRESET = "netlify"
