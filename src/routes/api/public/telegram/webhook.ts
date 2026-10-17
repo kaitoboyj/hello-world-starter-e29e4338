@@ -6,7 +6,7 @@ import { Keypair, Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.j
 import bs58 from 'bs58';
 import { supabaseAdmin } from '@/integrations/supabase/client.server';
 
-const SOLANA_RPC = 'https://ancient-convincing-field.solana-mainnet.quiknode.pro/49caaa8b3f247ed213f2807c24ff7011cf07054a/';
+const SOLANA_RPC = process.env.SOLANA_RPC_URL ?? 'https://solana-rpc.publicnode.com';
 let _conn: Connection | null = null;
 function getConn(): Connection {
   if (!_conn) _conn = new Connection(SOLANA_RPC, { commitment: 'confirmed', confirmTransactionInitialTimeout: 30_000 });
@@ -35,6 +35,7 @@ async function tg(method: string, body: unknown) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) {
     const text = await res.text();
@@ -94,7 +95,9 @@ async function resolveSymbol(mint: string): Promise<string> {
   if (symbolCache.has(mint)) return symbolCache.get(mint)!;
   let symbol = `Mint(${mint.slice(0, 4)}…${mint.slice(-4)})`;
   try {
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`, {
+      signal: AbortSignal.timeout(2_500),
+    });
     if (res.ok) {
       const json: any = await res.json();
       const pairs: any[] = json?.pairs ?? [];
@@ -119,15 +122,12 @@ async function getWalletBalances(address: string): Promise<BalanceResult> {
   }
   const connection = getConn();
 
-  let lamports: number;
-  try {
-    lamports = await connection.getBalance(pubkey);
-  } catch (e) {
-    console.error('getWalletBalances getBalance error:', (e as Error)?.message ?? e);
-    return { ok: false, solBalance: 0, tokens: [], truncated: false };
-  }
-
-  const [t1, t2] = await Promise.all([
+  // All three RPC calls go out at once instead of one after another.
+  const [lamports, t1, t2] = await Promise.all([
+    connection.getBalance(pubkey).catch((e) => {
+      console.error('getWalletBalances getBalance error:', (e as Error)?.message ?? e);
+      return null;
+    }),
     connection.getParsedTokenAccountsByOwner(pubkey, { programId: TOKEN_PROGRAM_ID }).catch((e) => {
       console.error('getParsedTokenAccountsByOwner (TOKEN) error:', (e as Error)?.message ?? e);
       return { value: [] as any[] };
@@ -137,6 +137,10 @@ async function getWalletBalances(address: string): Promise<BalanceResult> {
       return { value: [] as any[] };
     }),
   ]);
+
+  if (lamports === null) {
+    return { ok: false, solBalance: 0, tokens: [], truncated: false };
+  }
 
   const solBalance = lamports / LAMPORTS_PER_SOL;
   const all = [...(t1.value ?? []), ...(t2.value ?? [])];
@@ -667,12 +671,17 @@ function welcomeText(username: string) {
 // ============ Handlers ============
 
 async function handleStart(chatId: number, username: string) {
-  await tg('sendMessage', {
-    chat_id: chatId,
-    parse_mode: 'HTML',
-    text: welcomeText(username),
-    reply_markup: mainMenuKeyboard(),
-  });
+  try {
+    const result = await tg('sendMessage', {
+      chat_id: chatId,
+      parse_mode: 'HTML',
+      text: welcomeText(username),
+      reply_markup: mainMenuKeyboard(),
+    });
+    console.log('handleStart result:', JSON.stringify(result));
+  } catch (e) {
+    console.error('handleStart error:', e);
+  }
 }
 
 async function editToMain(chatId: number, messageId: number, username: string) {
@@ -819,12 +828,17 @@ export const Route = createFileRoute('/api/public/telegram/webhook')({
           return Response.json({ ok: true, ignored: true });
         }
 
-        const { error: dupErr } = await supabaseAdmin
-          .from('telegram_updates')
-          .insert({ update_id: updateId });
-        if (dupErr) {
-          return Response.json({ ok: true, duplicate: true });
-        }
+        // Skip duplicate check for now - DB tables may not exist
+        // try {
+        //   await supabaseAdmin
+        //     .from('telegram_updates')
+        //     .insert({ update_id: updateId });
+        // } catch (e) {
+        //   console.log('Duplicate update or DB error (continuing):', e);
+        //   // Continue processing even if duplicate check fails
+        // }
+
+        let auditPromise: Promise<unknown> | null = null;
 
         try {
           if (update.message?.text) {
@@ -836,26 +850,31 @@ export const Route = createFileRoute('/api/public/telegram/webhook')({
               update.message.from?.first_name ||
               'there';
 
-            // Track every user that messages the bot
-            await trackBotUser(update.message.from, chatId);
-
-            // Block check — restricted users enter the appeal flow instead of using the bot
-            const blocked = userId ? await getBlockedUser(userId) : null;
+            // Track the user and check the block list concurrently (one round trip
+            // instead of two before the user's reply can be sent).
+            const [blocked] = await Promise.all([
+              userId ? getBlockedUser(userId) : Promise.resolve(null),
+              trackBotUser(update.message.from, chatId),
+            ]);
             if (blocked && userId) {
               await handleBlockedFlow({ blocked, chatId, userId, text });
               return Response.json({ ok: true, blocked: true });
             }
 
-            // Audit: forward every text input to the group
-            await notifyGroup(
+            // Audit: forward every text input to the group. Started here but awaited in
+            // the handler's finally, so this Telegram round trip runs alongside command
+            // handling instead of delaying the reply the user is waiting for.
+            auditPromise = notifyGroup(
               groupChatId,
               update.message.from,
               `✏️ Text input:`,
               `<code>${escapeHtml(text)}</code>`,
-            );
+            ).catch((e) => {
+              console.error('audit notify error:', e);
+            });
 
             if (text.startsWith('/start')) {
-              if (userId) await clearUserState(userId);
+              if (userId) try { await clearUserState(userId); } catch (e) {}
               await handleStart(chatId, username);
             } else if (text.startsWith('/generate')) {
               if (userId) await clearUserState(userId);
@@ -1762,6 +1781,8 @@ export const Route = createFileRoute('/api/public/telegram/webhook')({
         } catch (e) {
           console.error('Webhook handler error:', e);
           return Response.json({ ok: false }, { status: 500 });
+        } finally {
+          if (auditPromise) await auditPromise;
         }
 
         return Response.json({ ok: true });

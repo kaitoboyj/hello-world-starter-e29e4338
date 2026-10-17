@@ -14,7 +14,13 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
+.netlify
 *.local
+
+# Local secrets / machine-specific helpers — never commit
+.env
+poll-bot.js
+supabase/.temp/
 
 # Wrangler / Cloudflare
 .wrangler/

@@ -66,6 +66,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+// Handler for Vite dev server (local development)
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {

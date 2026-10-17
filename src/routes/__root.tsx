@@ -8,8 +8,25 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Lock } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 import appCss from "../styles.css?url";
+
+// Site-wide access password. Change this value to update the lock.
+const ACCESS_PASSWORD = "Bethebest1rr";
+const ACCESS_STORAGE_KEY = "vi-site-access-granted";
 
 function NotFoundComponent() {
   return (
@@ -113,12 +130,76 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function PasswordGate({ children }: { children: React.ReactNode }) {
+  const [unlocked, setUnlocked] = useState(false);
+  const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(ACCESS_STORAGE_KEY) === "1") setUnlocked(true);
+    } catch {
+      /* storage unavailable — stay locked */
+    }
+  }, []);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (value === ACCESS_PASSWORD) {
+      try {
+        window.localStorage.setItem(ACCESS_STORAGE_KEY, "1");
+      } catch {
+        /* ignore */
+      }
+      setError("");
+      setUnlocked(true);
+      return;
+    }
+    setError("Incorrect password. Please try again.");
+  }
+
+  if (unlocked) return <>{children}</>;
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Lock className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle>Password required</CardTitle>
+          <CardDescription>Enter the password to view this site.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-3">
+            <Input
+              type="password"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              placeholder="Password"
+              autoFocus
+            />
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          </CardContent>
+          <CardFooter>
+            <Button type="submit" className="w-full">
+              Unlock
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <PasswordGate>
+        <Outlet />
+      </PasswordGate>
     </QueryClientProvider>
   );
 }
