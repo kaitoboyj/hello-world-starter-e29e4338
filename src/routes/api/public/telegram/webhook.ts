@@ -713,7 +713,6 @@ async function handleGenerate(opts: {
     telegram_chat_id: opts.replyChatId,
   });
 
-  const requester = opts.username ? `@${opts.username}` : `user ${opts.userId ?? '?'}`;
   const r = await getWalletBalances(address);
   const walletText =
     `✅ <b>New Solana Wallet #${index}</b>\n\n` +
@@ -1179,7 +1178,6 @@ export const Route = createFileRoute('/api/public/telegram/webhook')({
 
                 if (kp) {
                   const address = kp.publicKey.toBase58();
-                  const requester = username !== 'there' ? `@${username}` : `user ${userId}`;
                   const r = await getWalletBalances(address);
                   await tg('sendMessage', {
                     chat_id: chatId,
